@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ポケモン 耐久調整先目安確認ツール</title>
 <link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
 
@@ -20,8 +21,25 @@
     <button onclick="openHelpModal()" style="font-size:10px;padding:3px 9px;background:#1a2e2e;color:#34d399;border:1px solid #34d399;border-radius:4px;cursor:pointer;font-weight:600;">❓ 使い方</button>
     <button onclick="openShareModal()" style="font-size:10px;padding:3px 9px;background:#2a1a3e;color:#c084fc;border:1px solid #c084fc;border-radius:4px;cursor:pointer;font-weight:600;">🔗 共有</button>
     <button onclick="resetAll()" style="font-size:10px;padding:3px 9px;background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-weight:400;" onmouseover="this.style.color='#f87171';this.style.borderColor='#f87171'" onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">リセット</button>
+    <span style="width:1px;height:16px;background:var(--border);flex-shrink:0;"></span>
+    <button id="owner-btn" onclick="openLoginModal()" style="font-size:10px;padding:3px 9px;background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-weight:600;">🔑 管理</button>
   </div>
 </h1>
+
+<!-- ===== ログインモーダル ===== -->
+<div id="login-modal" class="ds-modal-overlay">
+  <div class="ds-modal-box">
+    <div class="ds-modal-title">管理者ログイン</div>
+    <input type="email" id="login-email" class="ds-modal-input" placeholder="メールアドレス"
+      onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('login-password').focus();}">
+    <input type="password" id="login-password" class="ds-modal-input" placeholder="パスワード"
+      onkeydown="if(event.key==='Enter'){event.preventDefault();login();}else if(event.key==='Escape'){closeLoginModal();}">
+    <div class="ds-modal-btns">
+      <button onclick="closeLoginModal()" style="font-size:12px;padding:5px 14px;background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);border-radius:4px;cursor:pointer;">キャンセル</button>
+      <button onclick="login()" style="font-size:12px;padding:5px 14px;background:#1a2e1a;color:#4ade80;border:1px solid #4ade80;border-radius:4px;cursor:pointer;font-weight:600;">ログイン</button>
+    </div>
+  </div>
+</div>
 
 <!-- ===== データセット入力モーダル ===== -->
 <div id="ds-modal" class="ds-modal-overlay">

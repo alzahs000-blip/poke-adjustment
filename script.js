@@ -1,4 +1,79 @@
 
+// ===== Supabase設定 =====
+const SUPABASE_URL = 'https://wumxbysayrwnrimvyvhe.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1bXhieXNheXJ3bnJpbXZ5dmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMTEyOTgsImV4cCI6MjA5MjU4NzI5OH0.dzzWMy2w09lfkSqAW1KneIStgovxmiEivf_2yDm6MnA';
+let sbClient = null;
+let isOwner = false;
+
+function initSupabase() {
+  if (typeof supabase === 'undefined') return;
+  sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+async function loadFromSupabase() {
+  if (!sbClient) return false;
+  try {
+    const { data, error } = await sbClient.from('app_data').select('payload').eq('id', 1).single();
+    if (error || !data) return false;
+    const saved = data.payload;
+    if (saved && saved.datasets && Object.keys(saved.datasets).length > 0) {
+      DS = saved;
+      if (!DS.datasets[DS.currentId]) DS.currentId = Object.keys(DS.datasets)[0];
+      applyData(DS.datasets[DS.currentId].data);
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
+async function saveSupabase() {
+  if (!sbClient || !isOwner) return;
+  try {
+    await sbClient.from('app_data').upsert({ id: 1, payload: DS, updated_at: new Date().toISOString() });
+  } catch(e) {}
+}
+
+function openLoginModal() {
+  document.getElementById('login-modal').classList.add('open');
+  setTimeout(() => document.getElementById('login-email').focus(), 50);
+}
+function closeLoginModal() {
+  document.getElementById('login-modal').classList.remove('open');
+}
+
+async function login() {
+  if (!sbClient) return;
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const { error } = await sbClient.auth.signInWithPassword({ email, password });
+  if (error) { alert('ログイン失敗: ' + error.message); return; }
+  document.getElementById('login-password').value = '';
+  closeLoginModal();
+}
+
+async function logout() {
+  if (!sbClient) return;
+  await sbClient.auth.signOut();
+}
+
+function updateOwnerUI() {
+  const btn = document.getElementById('owner-btn');
+  if (!btn) return;
+  if (isOwner) {
+    btn.textContent = 'ログアウト';
+    btn.style.color = '#4ade80';
+    btn.style.borderColor = '#4ade80';
+    btn.style.background = '#1a2e1a';
+    btn.onclick = logout;
+  } else {
+    btn.textContent = '🔑 管理';
+    btn.style.color = 'var(--text-muted)';
+    btn.style.borderColor = 'var(--border)';
+    btn.style.background = 'var(--surface2)';
+    btn.onclick = openLoginModal;
+  }
+}
+
 // ===== 数式評価 =====
 function safeEval(expr) {
   if (!expr || expr.trim() === '') return 0;
@@ -521,6 +596,7 @@ function saveAll() {
     DS.datasets[DS.currentId].data = buildData();
   }
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(DS)); } catch(e) {}
+  if (isOwner) saveSupabase();
 }
 
 // ドロップダウン再描画
@@ -780,6 +856,9 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   document.getElementById('help-modal').addEventListener('click', function(e) {
     if (e.target === this) closeHelpModal();
+  });
+  document.getElementById('login-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeLoginModal();
   });
   // データセットバーの初期化（DOMContentLoaded後に確実に実行）
   renderDatasetSelect();
@@ -1100,8 +1179,19 @@ function renderLL(type) {
 }
 
 // ===== 初期化 =====
-function initApp() {
-  loadAll();
+async function initApp() {
+  initSupabase();
+
+  if (sbClient) {
+    sbClient.auth.onAuthStateChange((event, session) => {
+      isOwner = !!session;
+      updateOwnerUI();
+    });
+  }
+
+  const loaded = await loadFromSupabase();
+  if (!loaded) loadAll();
+
   renderDatasetSelect();
   renderPresets();
   ['atkA','atkC','defB','defD'].forEach(t => { render(t); renderLL(t); });
