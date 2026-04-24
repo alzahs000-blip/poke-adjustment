@@ -372,3 +372,32 @@
   .share-modal-overlay.open { display: flex; }
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  @media (max-width: 639px) {
+    body { padding: 12px; }
+
+    h1 { font-size: 15px; margin-bottom: 14px; flex-wrap: wrap; }
+
+    .grid,
+    .grid-atk { grid-template-columns: 1fr; }
+
+    /* display:contentsのcellは1列でそのまま縦積みになるので特別対応不要 */
+
+    .row2 { grid-template-columns: 1fr; }
+
+    /* 一覧エリアの高さをモバイル向けに縮小 */
+    .list-area { height: 220px; }
+    .list-panel-atk .list-area { flex: 0 0 220px; }
+
+    /* データセットバーのボタンを折り返し */
+    .dataset-bar { gap: 5px; }
+    .dataset-select { max-width: 100%; }
+
+    /* ポップアップが画面外にはみ出さないよう左寄せに変更 */
+    .mult-popup { right: auto; left: 0; }
+
+    /* タップしやすいボタンサイズ */
+    button { min-height: 32px; }
+    .btn-edit-mode,
+    .btn-xs { min-height: 26px; }
+  }
