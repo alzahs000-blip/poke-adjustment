@@ -1,0 +1,374 @@
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #232636;
+    --border: #2e3247;
+    --accent-atkA: #f87171;   /* 物理火力 */
+    --accent-atkC: #fb923c;   /* 特殊火力 */
+    --accent-defB: #60a5fa;   /* 物理耐久 */
+    --accent-defD: #a78bfa;   /* 特殊耐久 */
+    --dim-atkA: #7f2020;
+    --dim-atkC: #7f3a10;
+    --dim-defB: #1e3a5f;
+    --dim-defD: #3b1f6e;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --line-color: #facc15;
+    --r: 8px;
+    --mono: 'Courier New', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Segoe UI', sans-serif; font-size: 14px;
+    min-height: 100vh; padding: 20px;
+  }
+  h1 {
+    font-size: 18px; font-weight: 700; letter-spacing: .05em;
+    margin-bottom: 20px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  h1 .tag {
+    font-size: 11px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 2px 6px; color: var(--text-muted); font-weight: 400;
+  }
+
+  /* 2×2グリッド */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 16px;
+    align-items: start;
+  }
+  /* 火力4パネルをフラットな2列グリッドで均等配置 */
+  .grid-atk {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 16px;
+    /* 各行の高さを左右で揃えるためalign-items: stretchを使用 */
+    align-items: stretch;
+  }
+  .cell { display: contents; }
+
+  /* panel */
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+  .panel-header {
+    display: flex; align-items: center; gap: 4px;
+    padding: 7px 10px; border-bottom: 1px solid var(--border);
+    font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .panel-header-title { flex: 1; }
+  .panel-header.atkA { color: var(--accent-atkA); }
+  .panel-header.atkC { color: var(--accent-atkC); }
+  .panel-header.defB { color: var(--accent-defB); }
+  .panel-header.defD { color: var(--accent-defD); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .dot.atkA { background: var(--accent-atkA); }
+  .dot.atkC { background: var(--accent-atkC); }
+  .dot.defB { background: var(--accent-defB); }
+  .dot.defD { background: var(--accent-defD); }
+
+
+  /* 火力一覧パネル高さ統一 */
+  .list-panel-atk {
+    display: flex; flex-direction: column;
+  }
+  .list-panel-atk .list-area { flex: 0 0 320px; }
+  .list-panel-atk .line-ctrl { flex-shrink: 0; }
+  .list-panel-atk .ll-wrap   { flex-shrink: 0; }
+  /* list area */
+  .list-area { padding: 8px; height: 320px; overflow-y: auto; }
+  .empty-hint { color: var(--text-muted); font-size: 12px; text-align: center; padding: 28px 0; }
+
+  .bar-row { display: flex; align-items: center; gap: 5px; padding: 3px 0; position: relative; border-radius: 3px; }
+  .bar-row:has(.affinity-btn:hover) { background: #2a2f45; outline: 1px solid #4e5a7a; }
+  .bar-name {
+    font-size: 11px; color: var(--text-dim);
+    flex: 1; min-width: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: clip;
+  }
+  .bar-stats { display: none; }
+  .bar-index {
+    font-family: var(--mono); font-size: 11px; color: var(--text);
+    width: 56px; flex-shrink: 0; text-align: right;
+  }
+
+
+  /* line */
+  .line-row { position: relative; height: 18px; margin: 1px 0; display: flex; align-items: center; gap: 6px; }
+  .lm-label {
+    font-family: var(--mono); font-size: 10px; color: var(--line-color);
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .lm-line { flex: 1; height: 1px; background: var(--line-color); opacity: 0.6; }
+  /* ラインカラーはlineColorで直接指定 */
+
+
+  /* ラインCtrl タブ */
+  .line-ctrl { padding: 7px 10px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 5px; }
+  .line-tabs { display: flex; gap: 4px; }
+  .line-tab {
+    font-size: 10px; padding: 2px 8px; border-radius: 3px; cursor: pointer;
+    background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border);
+    font-weight: 600; transition: color .15s, border-color .15s;
+  }
+  .line-tab.active { color: var(--line-color); border-color: var(--line-color); background: #3d320044; }
+  .line-tab:hover { opacity: .85; transform: none; }
+  .line-inputs { display: flex; gap: 5px; align-items: center; }
+  .line-inputs input[type="number"] { flex: 1; }
+  .line-sep { color: var(--text-muted); font-size: 13px; flex-shrink: 0; font-family: var(--mono); }
+  .ll-wrap { padding: 0 10px 7px; display: flex; flex-direction: column; gap: 3px; max-height: 66px; overflow-y: auto; }
+  .line-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; padding: 3px 6px;
+    background: var(--surface2); border-radius: 3px;
+  }
+  .li-bar  { width: 10px; height: 2px; background: var(--line-color); flex-shrink: 0; }
+  .li-name { flex: 1; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .li-val  { font-family: var(--mono); color: var(--line-color); flex-shrink: 0; }
+
+  /* form */
+  .reg-form { padding: 11px; }
+  .fl { display: block; font-size: 11px; color: var(--text-muted); margin: 8px 0 3px; letter-spacing: .04em; }
+  .fl:first-child { margin-top: 0; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .g { display: flex; flex-direction: column; gap: 3px; }
+  .g .fl { margin: 0; }
+
+  .stat-pair { display: flex; align-items: center; gap: 5px; }
+  .stat-pair input { flex: 1; }
+  .stat-pair .sep { color: var(--text-muted); font-size: 15px; flex-shrink: 0; font-family: var(--mono); }
+
+  .preview-box {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 5px 9px;
+    font-family: var(--mono); font-size: 11px; color: var(--text-dim);
+    margin-top: 7px;
+  }
+  .preview-box .v { color: var(--text); font-weight: bold; }
+  .r { font-size: 14px; font-weight: bold; }
+  .r.atkA { color: var(--accent-atkA); }
+  .r.atkC { color: var(--accent-atkC); }
+  .r.defB { color: var(--accent-defB); }
+  .r.defD { color: var(--accent-defD); }
+
+  /* プリセット倍率エリア */
+  .preset-area {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 5px; padding: 7px 8px; margin-top: 6px;
+  }
+  .preset-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .preset-header-label { font-size: 10px; color: var(--text-muted); letter-spacing: .05em; }
+  .preset-add-row { display: flex; gap: 5px; margin-top: 5px; }
+  .preset-add-row input[type="number"] { width: 80px; font-size: 11px; padding: 3px 6px; }
+
+  .preset-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .preset-chip {
+    display: inline-flex; align-items: center; gap: 3px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 2px 6px 2px 7px;
+    font-size: 11px; cursor: default;
+  }
+  .preset-chip-label { color: var(--text-dim); }
+  .preset-chip-val   { font-family: var(--mono); color: var(--text); font-size: 10px; }
+  .preset-chip-add {
+    background: none; border: none; cursor: pointer;
+    font-size: 12px; color: var(--text-muted); padding: 0; line-height: 1;
+    transition: color .1s;
+  }
+  .preset-chip-add:hover { color: var(--text); opacity: 1; transform: none; }
+  .preset-chip-del {
+    background: none; border: none; cursor: pointer;
+    font-size: 11px; color: var(--text-muted); padding: 0 0 0 2px; line-height: 1;
+    transition: color .1s;
+  }
+  .preset-chip-del:hover { color: #f87171; opacity: 1; transform: none; }
+
+  /* mult rows */
+  .mult-list { display: flex; flex-direction: column; gap: 3px; margin-top: 4px; }
+  .mult-row  { display: flex; gap: 5px; align-items: center; }
+  .mult-row input[type="text"]   { flex: 1; font-size: 11px; }
+  .mult-row input[type="number"] { width: 62px; font-size: 11px; }
+
+  /* inputs */
+  input {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 4px; color: var(--text); font-size: 13px;
+    padding: 5px 8px; width: 100%; outline: none; font-family: inherit;
+    transition: border-color .15s;
+  }
+  input:focus { border-color: #4e5a7a; }
+  input[type="number"] { font-family: var(--mono); }
+
+  /* buttons */
+  button {
+    border: none; border-radius: 4px; cursor: pointer;
+    font-size: 12px; font-family: inherit; font-weight: 600;
+    padding: 6px 12px; letter-spacing: .03em;
+    transition: opacity .15s, transform .1s;
+  }
+  button:hover  { opacity: .85; }
+  button:active { transform: scale(.97); }
+  .btn-atkA  { background: var(--dim-atkA); color: var(--accent-atkA); border: 1px solid var(--accent-atkA); }
+  .btn-atkC  { background: var(--dim-atkC); color: var(--accent-atkC); border: 1px solid var(--accent-atkC); }
+  .btn-defB  { background: var(--dim-defB); color: var(--accent-defB); border: 1px solid var(--accent-defB); }
+  .btn-defD  { background: var(--dim-defD); color: var(--accent-defD); border: 1px solid var(--accent-defD); }
+  .btn-neutral { background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border); }
+  .btn-yellow  { background: #3d3200; color: var(--line-color); border: 1px solid var(--line-color); font-size: 11px; padding: 4px 9px; }
+  .btn-sm  { font-size: 11px; padding: 3px 9px; }
+  .btn-xs  { font-size: 10px; padding: 2px 7px; }
+  .del-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 13px; padding: 0 2px; line-height: 1; }
+  .del-btn:hover { color: #f87171; opacity: 1; transform: none; }
+
+  /* 編集モード */
+  .btn-edit-mode {
+    font-size: 9px; padding: 2px 5px;
+    background: var(--surface2); color: var(--text-muted);
+    border: 1px solid var(--border); border-radius: 4px; cursor: pointer;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .btn-edit-mode:hover { color: var(--text); border-color: #4e5a7a; opacity: 1; transform: none; }
+  .btn-edit-mode.active { color: #f87171; border-color: #f87171; background: #7f202033; }
+
+  .entry-del-btn {
+    display: none; flex-shrink: 0;
+    background: none; border: none; color: #f87171;
+    cursor: pointer; font-size: 12px; padding: 0 2px; line-height: 1;
+  }
+  .edit-mode .entry-del-btn { display: block; }
+  .entry-del-btn:hover { opacity: .7 !important; transform: none; }
+
+  /* 名前インライン編集 */
+  .bar-name-input {
+    display: none; flex: 1; min-width: 0;
+    font-size: 11px; padding: 1px 4px;
+    background: var(--bg); border: 1px solid #4e5a7a;
+    border-radius: 3px; color: var(--text); font-family: inherit;
+  }
+  .edit-mode .bar-name       { display: none; }
+  .edit-mode .bar-name-input { display: block; }
+
+
+
+  /* 実効値バッジ（火力指数の×0.44表示）*/
+  .bar-effective {
+    font-family: var(--mono); font-size: 10px;
+    color: #facc15; background: #3d320055;
+    border: 1px solid #facc1566;
+    border-radius: 3px; padding: 0px 4px;
+    width: 56px; flex-shrink: 0; text-align: right;
+    white-space: nowrap;
+  }
+  /* 倍率ポップアップ */
+  .bar-index-btn {
+    font-family: var(--mono); font-size: 11px; color: var(--text);
+    width: 56px; flex-shrink: 0; text-align: right;
+    background: none; border: none; cursor: pointer;
+    padding: 0; line-height: 1;
+    position: relative;
+  }
+  .bar-index-btn:hover { color: var(--line-color); opacity: 1; transform: none; }
+  .mult-popup {
+    position: absolute; right: 0; top: calc(100% + 4px);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 10px; z-index: 100;
+    min-width: 160px; box-shadow: 0 4px 16px #0006;
+    display: flex; flex-direction: column; gap: 4px;
+    white-space: nowrap;
+  }
+  .mult-popup-title {
+    font-size: 10px; color: var(--text-muted); letter-spacing: .05em;
+    border-bottom: 1px solid var(--border); padding-bottom: 4px; margin-bottom: 2px;
+  }
+  .mult-popup-row { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; }
+  .mult-popup-label { color: var(--text-dim); }
+  .mult-popup-val   { font-family: var(--mono); color: var(--text); }
+
+  /* 相性変更 */
+  .affinity-btn {
+    font-size: 10px; padding: 1px 6px; flex-shrink: 0;
+    background: var(--surface2); color: var(--text-muted);
+    border: 1px solid var(--border); border-radius: 3px; cursor: pointer;
+    white-space: nowrap;
+  }
+  .affinity-btn:hover { color: var(--text); border-color: #4e5a7a; opacity: 1; transform: none; }
+  .affinity-btn.active { color: #fb923c; border-color: #fb923c; background: #7f3a1022; }
+  .affinity-panel {
+    display: flex; gap: 4px; flex-wrap: wrap;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 4px 6px; margin-top: 2px;
+  }
+  .affinity-mult-btn {
+    font-size: 11px; padding: 2px 8px;
+    background: var(--bg); color: var(--text-dim);
+    border: 1px solid var(--border); border-radius: 3px; cursor: pointer;
+    font-family: var(--mono);
+  }
+  .affinity-mult-btn:hover { color: #fb923c; border-color: #fb923c; opacity: 1; transform: none; }
+  .affinity-reset-btn {
+    font-size: 10px; padding: 2px 8px; margin-left: auto;
+    background: #3d320022; color: var(--line-color);
+    border: 1px solid var(--line-color); border-radius: 3px; cursor: pointer;
+  }
+  .affinity-reset-btn:hover { opacity: .8; transform: none; }
+  /* データセット管理 */
+  .dataset-bar {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 0 14px; flex-wrap: wrap;
+  }
+  .dataset-label { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+  .dataset-select {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-size: 12px; font-family: inherit;
+    padding: 4px 8px; border-radius: 4px; cursor: pointer;
+    outline: none; flex: 1; min-width: 120px; max-width: 260px;
+  }
+  .dataset-select:focus { border-color: #4e5a7a; }
+  .dataset-btn {
+    font-size: 10px; padding: 3px 8px; white-space: nowrap;
+    background: var(--surface2); color: var(--text-muted);
+    border: 1px solid var(--border); border-radius: 4px; cursor: pointer;
+  }
+  .dataset-btn:hover { color: var(--text); border-color: #4e5a7a; opacity: 1; }
+  .dataset-btn.danger:hover { color: #f87171; border-color: #f87171; opacity: 1; }
+
+  /* データセット入力モーダル */
+  .ds-modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: #000a; z-index: 2000;
+    align-items: center; justify-content: center;
+  }
+  .ds-modal-overlay.open { display: flex; }
+  .ds-modal-box {
+    background: #1a1d27; border: 1px solid #2e3247;
+    border-radius: 10px; padding: 20px;
+    width: min(360px, 90vw); display: flex; flex-direction: column; gap: 12px;
+  }
+  .ds-modal-title { font-size: 14px; font-weight: 700; color: #e2e8f0; }
+  .ds-modal-input {
+    background: #232636; border: 1px solid #2e3247; border-radius: 4px;
+    color: #e2e8f0; font-size: 13px; padding: 7px 10px; width: 100%; outline: none;
+    font-family: inherit;
+  }
+  .ds-modal-input:focus { border-color: #4e5a7a; }
+  .ds-modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+
+  .share-modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: #000a; z-index: 1000;
+    align-items: center; justify-content: center;
+  }
+  .share-modal-overlay.open { display: flex; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
